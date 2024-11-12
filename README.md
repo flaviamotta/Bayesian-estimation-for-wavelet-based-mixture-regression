@@ -1,5 +1,5 @@
-# Dynamic Mixture Weights Estimation in Gaussian Mixture Models
-This repository contains the code and implementation of the methods discussed in the paper titled "Dynamic Mixture Weights Estimation in Gaussian Mixture Models". The goal of this work is to relax the traditional assumption that the mixture weights in Gaussian mixture models (GMM) remain constant over time or space, which limits their applicability to more complex, real-world datasets. Our approach allows the mixture weights to vary dynamically, which is particularly useful in scenarios like time-series data, space-dependent data, or medical data, where the mixture weights change over time or spatial dimensions.
+# A Bayesian estimation approach for the wavelet-based mixture regression
+This repository contains the code and implementation of the methods discussed in the paper titled "A Bayesian estimation approach for the wavelet-based mixture regression". The goal of this work is to relax the traditional assumption that the mixture weights in Gaussian mixture models (GMM) remain constant over time or space, which limits their applicability to more complex, real-world datasets. Our approach allows the mixture weights to vary dynamically, which is particularly useful in scenarios like time-series data, space-dependent data, or medical data, where the mixture weights change over time or spatial dimensions.
 
 # Key Contributions
 
