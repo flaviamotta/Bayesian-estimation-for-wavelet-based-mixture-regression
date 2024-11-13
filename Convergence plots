@@ -1,0 +1,355 @@
+#Convergence Plots
+
+library('ggplot2')
+library('latex2exp')
+library('coda')
+library('ggtext')
+library('bfw')
+
+nchain_vector <- seq_len(nchain)
+# ==============================================================================
+# =============================== Mean.lower ===================================
+# ==============================================================================
+
+# Creating the data frames and variables needed.
+
+#Trace and density
+mu1 <- matrix_mu[,1]
+HDI_mu1 <- ComputeHDI(matrix_mu[,1], credible.region = 0.95)
+mean1_post <- data.frame(mu1,estimated_mu_median[1], HDI_mu1[1],
+                         estimated_mu_mean[1], nchain_vector, HDI_mu1[2])
+#ACF
+acf_mu1 <- acf(matrix_mu[,1], plot = FALSE)$acf
+acf_mu1_lag <- acf(matrix_mu[,1], plot = FALSE)$lag
+acf_min_mu1 <- ifelse(acf_mu1>=0,0,acf_mu1)
+acf_max_mu1 <- ifelse(acf_mu1>=0,acf_mu1,0)
+acf_mean1_post <- data.frame(acf_mu1, acf_mu1_lag,acf_min_mu1,acf_max_mu1)
+
+# ================================= Trace mu1 ==================================
+
+g_trace_mu1 <- ggplot(mean1_post, aes(x = nchain_vector)) + 
+  geom_ribbon(aes(ymin = HDI_mu1.1., ymax = HDI_mu1.2.), alpha = .30,
+              fill = "#74B3CE", color = "transparent")+
+  geom_line(aes(y = mu1),color ="#168ABB", size = 1) + 
+  geom_line(aes(y=estimated_mu_median.1.),color = "black",
+            linetype = "longdash", size = .8)+
+  geom_line(aes(y=estimated_mu_mean.1.),
+            color = "#DB162F",linetype = "dotted", size = 1.25)+
+  labs(title="",x="Iterations", y = TeX("$\\mu_1$")) +
+  theme_classic()
+
+
+# =================================== ACF mu1 ==================================
+
+g_acf_mu1 <- ggplot(acf_mean1_post, aes(x = acf_mu1_lag, y = acf_mu1)) + 
+  geom_hline(aes(yintercept = 0), size = .5,
+             color = "black", linetype = "longdash") +
+  geom_point(color ="#168ABB",size = 1.5)+
+  geom_linerange(aes(x = acf_mu1_lag, ymin = acf_min_mu1, ymax = acf_max_mu1),
+                 color = "#168ABB", size = 1)+
+  labs(title="",x="Lag", y = TeX("Autocorrelation - $\\mu_1$")) +
+  scale_x_continuous(breaks = seq(0, 30, 5))+
+  theme_classic()
+
+# =============================== Density mu1 ==================================
+
+density_mu1 <- ggplot(mean1_post, aes(x = mu1)) + 
+  geom_hline(aes(yintercept = 0), size = .5,
+             color = "black") +
+  geom_density(color = "#168ABB", size = 1) +
+  labs(title="",y="Density", x = TeX("$\\mu_1$"))+
+  theme_classic()
+
+
+# Access the x, y coordinates in the build object
+build_object <- ggplot_build(density_mu1)
+x_dens <- build_object$data[[2]]$x# build_object$data[[1]]$x
+y_dens <- build_object$data[[2]]$y# build_object$data[[1]]$y
+
+index_left <- min(which(x_dens >= HDI_mu1[1]))
+index_right <- max(which(x_dens <= HDI_mu1[2]))
+
+g_density_mu1 <- density_mu1 +
+  geom_area(data=data.frame(
+    x=x_dens[index_left:index_right],
+    y=y_dens[index_left:index_right]), 
+    aes(x=x,y=y),
+    fill="#74B3CE",
+    alpha=0.30)+
+  geom_linerange(aes(x = estimated_mu_median[1], ymin = 0, 
+                     ymax = y_dens[match(round(estimated_mu_median[1],digits = 1),
+                                         round(x_dens,digits = 1))]),
+                 size = .8, color = "black", linetype = "longdash") +
+  geom_linerange(aes(x = estimated_mu_mean[1], ymin = 0, 
+                     ymax = y_dens[match(round(estimated_mu_mean[1],digits = 1),
+                                         round(x_dens,digits = 1))]),
+                 size = 1.25, color = "#DB162F", linetype = "dotted") 
+
+
+# ==============================================================================
+# =============================== Mean.higher ==================================
+# ==============================================================================
+
+# Creating the data frames and variables needed.
+#Trace and density
+mu2 <- matrix_mu[,2]
+HDI_mu2 <- ComputeHDI(matrix_mu[,2], credible.region = 0.95)
+mean2_post <- data.frame(mu2,estimated_mu_median[2], HDI_mu2[1],
+                         estimated_mu_mean[2], nchain_vector, HDI_mu2[2])
+
+#ACF
+acf_mu2 <- acf(matrix_mu[,2], plot = FALSE)$acf
+acf_mu2_lag <- acf(matrix_mu[,2], plot = FALSE)$lag
+acf_min_mu2 <- ifelse(acf_mu2>=0,0,acf_mu2)
+acf_max_mu2 <- ifelse(acf_mu2>=0,acf_mu2,0)
+acf_mean2_post <- data.frame(acf_mu2, acf_mu2_lag,acf_min_mu2,acf_max_mu2)
+
+
+# ================================= Trace mu2 ==================================
+
+g_trace_mu2 <- ggplot(mean2_post, aes(x = nchain_vector)) + 
+  geom_ribbon(aes(ymin = HDI_mu2.1., ymax = HDI_mu2.2.), alpha = .30,
+              fill = "#74B3CE", color = "transparent")+
+  geom_line(aes(y = mu2),color ="#168ABB", size = 1) + 
+  geom_line(aes(y=estimated_mu_median.2.),color = "black",
+            linetype = "longdash", size = .8)+
+  geom_line(aes(y=estimated_mu_mean.2.),
+            color = "#DB162F",linetype = "dotted", size = 1.25)+
+  labs(title="",x="Iterations", y = TeX("$\\mu_2$")) +
+  theme_classic()
+
+
+# =================================== ACF mu2 ==================================
+
+g_acf_mu2 <- ggplot(acf_mean2_post, aes(x = acf_mu2_lag, y = acf_mu2)) + 
+  geom_hline(aes(yintercept = 0), size = .5,
+             color = "black", linetype = "longdash") +
+  geom_point(color ="#168ABB",size = 1.5)+
+  geom_linerange(aes(x = acf_mu2_lag, ymin = acf_min_mu2, ymax = acf_max_mu2),
+                 color = "#168ABB", size = 1)+
+  labs(title="",x="Lag", y = TeX("Autocorrelation - $\\mu_2$")) +
+  scale_x_continuous(breaks = seq(0, 30, 5))+
+  theme_classic()
+
+# =============================== Density mu2 ==================================
+
+density_mu2 <- ggplot(mean2_post, aes(x = mu2)) + 
+  geom_hline(aes(yintercept = 0), size = .5,
+             color = "black") +
+  geom_density(color = "#168ABB", size = 1) +
+  labs(title="",y="Density", x = TeX("$\\mu_2$"))+
+  theme_classic()
+
+
+# Access the x, y coordinates in the build object
+build_object_mu2 <- ggplot_build(density_mu2)
+x_dens_mu2 <- build_object_mu2$data[[2]]$x# build_object_mu2$data[[1]]$x
+y_dens_mu2 <- build_object_mu2$data[[2]]$y# build_object_mu2$data[[1]]$y
+
+index_left_mu2 <- min(which(x_dens_mu2 >= HDI_mu2[1]))
+index_right_mu2 <- max(which(x_dens_mu2 <= HDI_mu2[2]))
+
+g_density_mu2 <- density_mu2 +
+  geom_area(data=data.frame(
+    x=x_dens_mu2[index_left_mu2:index_right_mu2],
+    y=y_dens_mu2[index_left_mu2:index_right_mu2]), 
+    aes(x=x,y=y),
+    fill="#74B3CE",
+    alpha=0.30)+
+  geom_linerange(aes(x = estimated_mu_median[2], ymin = 0, 
+                     ymax =  y_dens_mu2[match(round(estimated_mu_median[2],digits = 1),
+                                              round(x_dens_mu2,digits = 1))]),
+                 size = .8, color = "black", linetype = "longdash") +
+  geom_linerange(aes(x = estimated_mu_mean[2], ymin = 0, 
+                     ymax = y_dens_mu2[match(round(estimated_mu_median[2],digits = 1),
+                                             round(x_dens_mu2,digits = 1))]),
+                 size = 1.25, color = "#DB162F", linetype = "dotted") 
+
+# ==============================================================================
+# ============================== Precision lower ===============================
+# ==============================================================================
+
+# Creating the data frames and variables needed.
+#Trace and density
+phi1 <- matrix_phi[,1]
+HDI_phi1 <- ComputeHDI(matrix_phi[,1], credible.region = 0.95)
+precision1_post <- data.frame(phi1,estimated_phi_median[1],
+                              HDI_phi1[1],estimated_phi_mean[1],
+                              nchain_vector, HDI_phi1[2])
+
+#ACF
+acf_phi1 <- acf(matrix_phi[,1], plot = FALSE)$acf
+acf_phi1_lag <- acf(matrix_phi[,1], plot = FALSE)$lag
+acf_min_phi1 <- ifelse(acf_phi1>=0,0,acf_phi1)
+acf_max_phi1 <- ifelse(acf_phi1>=0,acf_phi1,0)
+acf_precision1_post <- data.frame(acf_phi1, acf_phi1_lag,acf_min_phi1,
+                                  acf_max_phi1)
+
+
+# ================================= Trace phi1 =================================
+
+g_trace_phi1 <- ggplot(precision1_post, aes(x = nchain_vector)) + 
+  geom_ribbon(aes(ymin = HDI_phi1.1., ymax = HDI_phi1.2.), alpha = .30,
+              fill = "#74B3CE", color = "transparent")+
+  geom_line(aes(y = phi1),color ="#168ABB", size = 1) + 
+  geom_line(aes(y=estimated_phi_median.1.),color = "black",
+            linetype = "longdash", size = .8)+
+  geom_line(aes(y=estimated_phi_mean.1.),
+            color = "#DB162F",linetype = "dotted", size = 1.25)+
+  labs(title="",x="Iterations", y = TeX("$\\tau_1^2$")) +
+  theme_classic()
+
+
+# =================================== ACF phi1 =================================
+
+g_acf_phi1 <- ggplot(acf_precision1_post, aes(x = acf_phi1_lag, y = acf_phi1)) + 
+  geom_hline(aes(yintercept = 0), size = .5,
+             color = "black", linetype = "longdash") +
+  geom_point(color ="#168ABB",size = 1.5)+
+  geom_linerange(aes(x = acf_phi1_lag, ymin = acf_min_phi1, ymax = acf_max_phi1),
+                 color = "#168ABB", size = 1)+
+  labs(title="",x="Lag", y = TeX("Autocorrelation - $\\tau_1^2$")) +
+  scale_x_continuous(breaks = seq(0, 30, 5))+
+  theme_classic()
+
+# =============================== Density phi1 =================================
+
+density_phi1 <- ggplot(precision1_post, aes(x = phi1)) + 
+  geom_hline(aes(yintercept = 0), size = .5,
+             color = "black") +
+  geom_density(color = "#168ABB", size = 1) +
+  labs(title="",y="Density", x = TeX("$\\tau_1^2$"))+
+  theme_classic()
+
+
+# Access the x, y coordinates in the build object
+build_object_phi1 <- ggplot_build(density_phi1)
+x_dens_phi1 <- build_object_phi1$data[[2]]$x# build_object_phi1$data[[1]]$x
+y_dens_phi1 <- build_object_phi1$data[[2]]$y# build_object_phi1$data[[1]]$y
+
+index_left_phi1 <- min(which(x_dens_phi1 >= HDI_phi1[1]))
+index_right_phi1 <- max(which(x_dens_phi1 <= HDI_phi1[2]))
+
+g_density_phi1 <- density_phi1 +
+  geom_area(data=data.frame(
+    x=x_dens_phi1[index_left_phi1:index_right_phi1],
+    y=y_dens_phi1[index_left_phi1:index_right_phi1]), 
+    aes(x=x,y=y),
+    fill="#74B3CE",
+    alpha=0.30)+
+  geom_linerange(aes(x = estimated_phi_median[1], ymin = 0, 
+                     ymax = y_dens_phi1[match(round(estimated_phi_median[1],digits = 6),
+                                              round(x_dens_phi1,digits = 6))]),
+                 size = .8, color = "black", linetype = "longdash") +
+  geom_linerange(aes(x = estimated_phi_mean[1], ymin = 0, 
+                     ymax = y_dens_phi1[match(round(estimated_phi_mean[1],digits = 6),
+                                              round(x_dens_phi1,digits = 6))]),
+                 size = 1.25, color = "#DB162F", linetype = "dotted") 
+
+
+# ==============================================================================
+# ============================== Precision higher ==============================
+# ==============================================================================
+
+
+# Creating the data frames and variables needed.
+#Trace and density
+phi2 <- matrix_phi[,2]
+HDI_phi2 <- ComputeHDI(matrix_phi[,2], credible.region = 0.95)
+precision2_post <- data.frame(phi2,estimated_phi_median[2],
+                              HDI_phi2[1],estimated_phi_mean[2],
+                              nchain_vector, HDI_phi2[2])
+
+#ACF
+acf_phi2 <- acf(matrix_phi[,2], plot = FALSE)$acf
+acf_phi2_lag <- acf(matrix_phi[,2], plot = FALSE)$lag
+acf_min_phi2 <- ifelse(acf_phi2>=0,0,acf_phi2)
+acf_max_phi2 <- ifelse(acf_phi2>=0,acf_phi2,0)
+acf_precision2_post <- data.frame(acf_phi2, acf_phi2_lag,acf_min_phi2,
+                                  acf_max_phi2)
+
+
+# ================================= Trace phi2 =================================
+
+g_trace_phi2 <- ggplot(precision2_post, aes(x = nchain_vector)) + 
+  geom_ribbon(aes(ymin = HDI_phi2.1., ymax = HDI_phi2.2.), alpha = .30,
+              fill = "#74B3CE", color = "transparent")+
+  geom_line(aes(y = phi2),color ="#168ABB", size = 1) + 
+  geom_line(aes(y=estimated_phi_median.2.),color = "black",
+            linetype = "longdash", size = .8)+
+  geom_line(aes(y=estimated_phi_mean.2.),
+            color = "#DB162F",linetype = "dotted", size = 1.25)+
+  labs(title="",x="Iterations", y = TeX("$\\tau_2^2$")) +
+  theme_classic()
+
+
+# =================================== ACF phi2 =================================
+
+g_acf_phi2 <- ggplot(acf_precision2_post, aes(x = acf_phi2_lag, y = acf_phi2)) + 
+  geom_hline(aes(yintercept = 0), size = .5,
+             color = "black", linetype = "longdash") +
+  geom_point(color ="#168ABB",size = 1.5)+
+  geom_linerange(aes(x = acf_phi2_lag, ymin = acf_min_phi2, ymax = acf_max_phi2),
+                 color = "#168ABB", size = 1)+
+  labs(title="",x="Lag", y = TeX("Autocorrelation - $\\tau_2^2$")) +
+  scale_x_continuous(breaks = seq(0, 30, 5))+
+  theme_classic()
+
+# =============================== Density phi2 =================================
+
+density_phi2 <- ggplot(precision2_post, aes(x = phi2)) + 
+  geom_hline(aes(yintercept = 0), size = .5,
+             color = "black") +
+  geom_density(color = "#168ABB", size = 1) +
+  labs(title="",y="Density", x = TeX("$\\tau_2^2$"))+
+  theme_classic()
+
+
+# Access the x, y coordinates in the build object
+build_object_phi2 <- ggplot_build(density_phi2)
+x_dens_phi2 <- build_object_phi2$data[[2]]$x# build_object_phi2$data[[1]]$x
+y_dens_phi2 <- build_object_phi2$data[[2]]$y# build_object_phi2$data[[1]]$y
+
+index_left_phi2 <- min(which(x_dens_phi2 >= HDI_phi2[1]))
+index_right_phi2 <- max(which(x_dens_phi2 <= HDI_phi2[2]))
+
+g_density_phi2 <- density_phi2 +
+  geom_area(data=data.frame(
+    x=x_dens_phi2[index_left_phi2:index_right_phi2],
+    y=y_dens_phi2[index_left_phi2:index_right_phi2]), 
+    aes(x=x,y=y),
+    fill="#74B3CE",
+    alpha=0.30)+
+  geom_linerange(aes(x = estimated_phi_median[2], ymin = 0, 
+                     ymax = y_dens_phi2[match(round(estimated_phi_median[2],digits = 6),
+                                              round(x_dens_phi2,digits = 6))]),
+                 size = .8, color = "black", linetype = "longdash") +
+  geom_linerange(aes(x = estimated_phi_mean[2], ymin = 0, 
+                     ymax = y_dens_phi2[match(round(estimated_phi_mean[2],digits = 6),
+                                              round(x_dens_phi2,digits = 6))]),
+                 size = 1.25, color = "#DB162F", linetype = "dotted")
+
+
+
+# ==============================================================================
+# =================================== Alpha ====================================
+# ==============================================================================
+
+#Alpha
+minHPD <- vector("double", data_size)
+maxHPD <- vector("double", data_size)
+for (ii in 1:data_size) {
+  hpd_alpha <- ComputeHDI(matrix_alpha[,ii], credible.region = 0.95)
+  minHPD[ii] <- hpd_alpha[1]
+  maxHPD[ii] <- hpd_alpha[2]
+}
+
+alpha_post <- data.frame(minHPD, maxHPD, estimated_alpha_median, serie, y)
+
+g_alpha <- ggplot(alpha_post, aes(x = serie))+
+  geom_ribbon(aes(ymin = minHPD, ymax = maxHPD), alpha = .75,
+              fill = "#74B3CE", color = "transparent")+ 
+  geom_line(aes(y=estimated_alpha_median),color = "black",
+            size = 1)+
+  labs(title="",x="Index", y = TeX("$\\hat{\\alpha}_t$")) +
+  theme_classic()
